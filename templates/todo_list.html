@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}ToDoリスト{% endblock %}
+{% block content %}
+    <h1>{{ current_user.username }}のToDoリスト</h1>
+    <a href="{{ url_for('add_todo') }}">新規ToDo追加</a>
+    <ul class="todo-list">
+    {% for todo in todos %}
+        <li class="todo-item">
+            <h3>{{ todo.title }}</h3>
+            <p>{{ todo.description }}</p>
+            <div class="actions">
+                <a href="{{ url_for('edit_todo', id=todo.id) }}">編集</a>
+                <a href="{{ url_for('delete_todo', id=todo.id) }}" onclick="return confirm('本当に削除しますか？');">削除</a>
+            </div>
+        </li>
+    {% else %}
+        <li>ToDoがありません。新しいToDoを追加してください。</li>
+    {% endfor %}
+    </ul>
+{% endblock %}

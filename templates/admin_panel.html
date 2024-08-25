@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}管理パネル{% endblock %}
+{% block content %}
+    <h1>管理パネル</h1>
+    <h2>ユーザー一覧</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>ユーザー名</th>
+                <th>管理者権限</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ '管理者' if user.is_admin else '一般ユーザー' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

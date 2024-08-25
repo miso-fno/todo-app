@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}ログイン{% endblock %}
+{% block content %}
+    <h1>ログイン</h1>
+    <form method="POST" action="{{ url_for('login') }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.username.label }}
+            {{ form.username() }}
+        </div>
+        <div>
+            {{ form.password.label }}
+            {{ form.password() }}
+        </div>
+        {{ form.submit() }}
+    </form>
+    <p>アカウントをお持ちでない方は<a href="{{ url_for('register') }}">こちら</a>から登録してください。</p>
+{% endblock %}

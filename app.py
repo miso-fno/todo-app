@@ -20,10 +20,22 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def create_guest_user():
+    with app.app_context():
+        guest_user = User.query.filter_by(username='guest').first()
+        if not guest_user:
+            guest_user = User(username='guest', password='')
+            db.session.add(guest_user)
+            db.session.commit()
+
+# アプリケーションの起動時に一度だけ実行
+create_guest_user()
+
 @app.route('/')
-@login_required
 def index():
-    todos = Todo.query.filter_by(user_id=current_user.id).all()
+    todos = Todo.query.all()
+    for todo in todos:
+        print(f"ID: {todo.id}, Title: {todo.title}, Description: {todo.description}")
     return render_template('todo_list.html', todos=todos)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -38,10 +50,9 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route('/logout')
-@login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -56,11 +67,11 @@ def register():
     return render_template('register.html', form=form)
 
 @app.route('/add_todo', methods=['GET', 'POST'])
-@login_required
 def add_todo():
     form = TodoForm()
     if form.validate_on_submit():
-        new_todo = Todo(title=form.title.data, description=form.description.data, user_id=current_user.id)
+        user_id = current_user.id if current_user.is_authenticated else User.query.filter_by(username='guest').first().id
+        new_todo = Todo(title=form.title.data, description=form.description.data, user_id=user_id)
         db.session.add(new_todo)
         db.session.commit()
         flash('ToDoが追加されました。')
@@ -68,12 +79,8 @@ def add_todo():
     return render_template('todo_edit.html', form=form, title='新規ToDo追加')
 
 @app.route('/edit_todo/<int:id>', methods=['GET', 'POST'])
-@login_required
 def edit_todo(id):
     todo = Todo.query.get_or_404(id)
-    if todo.user_id != current_user.id:
-        flash('このToDoを編集する権限がありません。')
-        return redirect(url_for('index'))
     form = TodoForm(obj=todo)
     if form.validate_on_submit():
         todo.title = form.title.data
@@ -84,23 +91,15 @@ def edit_todo(id):
     return render_template('todo_edit.html', form=form, title='ToDo編集')
 
 @app.route('/delete_todo/<int:id>')
-@login_required
 def delete_todo(id):
     todo = Todo.query.get_or_404(id)
-    if todo.user_id != current_user.id:
-        flash('このToDoを削除する権限がありません。')
-        return redirect(url_for('index'))
     db.session.delete(todo)
     db.session.commit()
     flash('ToDoが削除されました。')
     return redirect(url_for('index'))
 
 @app.route('/admin')
-@login_required
 def admin_panel():
-    if not current_user.is_admin:
-        flash('管理者ページにアクセスする権限がありません。')
-        return redirect(url_for('index'))
     users = User.query.all()
     return render_template('admin_panel.html', users=users)
 

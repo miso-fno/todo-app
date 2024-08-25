@@ -11,8 +11,8 @@ jobs:
             - run: pip install -r requirements.txt
             - run: pip install bandit
             - run: bandit -r .
-              if: ${{ always() }}
             - name: Run Dastardly Action Step
+              if: ${{ always() }}
               uses: PortSwigger/dastardly-github-action@main
               with:
                 target-url: 'http://127.0.0.1:5000'
